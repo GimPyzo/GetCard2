@@ -38,12 +38,10 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     TARGET_CHAT_ID = chat_id
     
     await update.message.reply_text(
-        f"🆔 ID этого чата: `{chat_id}`\n"
-        f"💾 Сохранен для авто-отправки",
         parse_mode='Markdown'
     )
     
-    print(f"💾 ID чата сохранен: {chat_id}")
+    print(f"Услышал тебя, брадка вот те цифры: {chat_id}")
 
 async def set_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Установить текущий чат для авто-отправки"""
@@ -58,9 +56,7 @@ async def set_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_title = update.effective_chat.title or "этот чат"
     
     await update.message.reply_text(
-        f"✅ Чат установлен для авто-отправки!\n"
-        f"🏷️ Чат: {chat_title}\n"
-        f"🆔 ID: `{TARGET_CHAT_ID}`",
+        f"🏷️ Этот чатик: {chat_title}"
         parse_mode='Markdown'
     )
 
@@ -107,9 +103,6 @@ async def autosend_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Запускаем задачу
     auto_send_task = asyncio.create_task(auto_send_loop(context))
     await update.message.reply_text(
-        f"✅ Авто-отправка запущена!\n"
-        f"⏰ Сообщения будут отправляться каждые 3 часа\n"
-        f"💬 В чат с ID: `{TARGET_CHAT_ID}`",
         parse_mode='Markdown'
     )
 
@@ -141,9 +134,7 @@ async def auto_send_loop(context: ContextTypes.DEFAULT_TYPE):
             )
             
             next_time = datetime.now() + timedelta(hours=3)
-            print(f"✅ Сообщение отправлено: /getcard@F_CardBot")
-            print(f"⏰ Следующая отправка в {next_time.strftime('%H:%M')}")
-            
+            print(f"/getcard@F_CardBot")
             # Ждем 3 часа (10800 секунд)
             await asyncio.sleep(10800)
             
@@ -173,3 +164,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
