@@ -22,7 +22,7 @@ def keep_alive():
     t.start()
 
 # Безопасное получение токена
-BOT_TOKEN = os.environ['6600731008:AAG9FuI5wKKwtFuYnKXkPAGBKB5o4VjfSSg']
+BOT_TOKEN = os.environ['BOT_TOKEN']
 
 user_cooldowns = {}
 card_phrases = [
@@ -64,4 +64,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
