@@ -9,9 +9,9 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 # Безопасное получение токена
 BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
 
-# Настройки (замените эти значения)
-YOUR_USER_ID = 5195824376  # ЗАМЕНИТЕ на ваш Telegram ID
-TARGET_CHAT_ID = None  # Будет определено автоматически или установлено вручную
+# Настройки
+YOUR_USER_ID = 5195824376  # Ваш Telegram ID
+TARGET_CHAT_ID = None  # Будет определено автоматически
 BOT_USERNAME = "Gimart_bot"  # Юзернейм вашего бота
 
 user_cooldowns = {}
@@ -23,8 +23,6 @@ card_phrases = [
 
 # Переменная для хранения задачи авто-отправки
 auto_send_task = None
-# Словарь для хранения ID чатов
-chat_ids = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -34,14 +32,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Команда для получения ID чата"""
     chat_id = update.effective_chat.id
-    chat_type = update.effective_chat.type
-    chat_title = update.effective_chat.title or "Личный чат"
-    
-
     
     # Сохраняем ID чата для авто-отправки
     global TARGET_CHAT_ID
     TARGET_CHAT_ID = chat_id
+    
+    await update.message.reply_text(
+        f"🆔 ID этого чата: `{chat_id}`\n"
+        f"💾 Сохранен для авто-отправки",
+        parse_mode='Markdown'
+    )
+    
     print(f"💾 ID чата сохранен: {chat_id}")
 
 async def set_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -56,6 +57,12 @@ async def set_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     TARGET_CHAT_ID = update.effective_chat.id
     chat_title = update.effective_chat.title or "этот чат"
     
+    await update.message.reply_text(
+        f"✅ Чат установлен для авто-отправки!\n"
+        f"🏷️ Чат: {chat_title}\n"
+        f"🆔 ID: `{TARGET_CHAT_ID}`",
+        parse_mode='Markdown'
+    )
 
 async def getcard(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -66,7 +73,7 @@ async def getcard(update: Update, context: ContextTypes.DEFAULT_TYPE):
         time_passed = current_time - user_cooldowns[user_id]
         if time_passed < 60:
             remaining = int(60 - time_passed)
-            await update.message.reply_text(f"⏳ Кулдаун! Жди {remaining} сек.")
+            await update.message.reply_text(f" ЖДИИИИ {remaining} сек.")
             return
 
     # Обновляем время и отправляем карту
@@ -99,6 +106,12 @@ async def autosend_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Запускаем задачу
     auto_send_task = asyncio.create_task(auto_send_loop(context))
+    await update.message.reply_text(
+        f"✅ Авто-отправка запущена!\n"
+        f"⏰ Сообщения будут отправляться каждые 3 часа\n"
+        f"💬 В чат с ID: `{TARGET_CHAT_ID}`",
+        parse_mode='Markdown'
+    )
 
 async def autosend_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Остановка автоматической отправки"""
@@ -121,16 +134,23 @@ async def auto_send_loop(context: ContextTypes.DEFAULT_TYPE):
     
     try:
         while True:
-            # Отправляем команду от вашего имени
+            # Отправляем ТОЛЬКО команду /getcard@F_CardBot
             await context.bot.send_message(
                 chat_id=TARGET_CHAT_ID,
-                text=f"/getcard@{BOT_USERNAME}"
+                text="/getcard@F_CardBot"
             )
             
             next_time = datetime.now() + timedelta(hours=3)
+            print(f"✅ Сообщение отправлено: /getcard@F_CardBot")
+            print(f"⏰ Следующая отправка в {next_time.strftime('%H:%M')}")
             
             # Ждем 3 часа (10800 секунд)
             await asyncio.sleep(10800)
+            
+    except asyncio.CancelledError:
+        print("🛑 Авто-отправка остановлена")
+    except Exception as e:
+        print(f"❌ Ошибка в авто-отправке: {e}")
 
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
@@ -143,6 +163,11 @@ def main():
     application.add_handler(CommandHandler("autosend_start", autosend_start))
     application.add_handler(CommandHandler("autosend_stop", autosend_stop))
     
+    print("🤖 Бот запущен!")
+    print(f"👤 Ваш ID: {YOUR_USER_ID}")
+    print("🎯 Бот будет отправлять: /getcard@F_CardBot")
+    print("🆔 Используйте /getid в группе чтобы узнать ID")
+    print("⏰ Используйте /set_chat затем /autosend_start для авто-отправки")
     
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
